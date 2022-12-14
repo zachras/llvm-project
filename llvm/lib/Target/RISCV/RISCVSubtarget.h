@@ -38,11 +38,22 @@ public:
     Others,
     SiFive7,
   };
+  
+  enum class THEADProcFamilyEnum : uint8_t {
+    Others,
+    C906,
+    //C910,
+  };
 
 private:
   virtual void anchor();
 
   RISCVProcFamilyEnum RISCVProcFamily = Others;
+
+  THEADProcFamilyEnum THEADProcFamily = THEADProcFamilyEnum::Others;
+  
+  bool HasExtxtheadcondmov = false;
+  bool HasExtxtheadmac = false;
 
   bool HasStdExtM = false;
   bool HasStdExtA = false;
@@ -147,6 +158,11 @@ public:
   /// and preferably modeled with SubtargetFeatures or properties in
   /// initializeProperties().
   RISCVProcFamilyEnum getProcFamily() const { return RISCVProcFamily; }
+
+  bool isTHEADProc() const { return THEADProcFamily != THEADProcFamilyEnum ::Others; }
+  THEADProcFamilyEnum getTHEADProcFamily() const { return THEADProcFamily; }
+
+  bool hasExtxtheadcondmov() const { return HasExtxtheadcondmov; }
 
   bool hasStdExtM() const { return HasStdExtM; }
   bool hasStdExtA() const { return HasStdExtA; }
