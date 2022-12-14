@@ -163,6 +163,7 @@ public:
   THEADProcFamilyEnum getTHEADProcFamily() const { return THEADProcFamily; }
 
   bool hasExtxtheadcondmov() const { return HasExtxtheadcondmov; }
+  bool hasExtxtheadmac() const { return HasExtxtheadmac; }
 
   bool hasStdExtM() const { return HasStdExtM; }
   bool hasStdExtA() const { return HasStdExtA; }
