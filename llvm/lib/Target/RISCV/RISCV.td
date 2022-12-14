@@ -607,3 +607,5 @@ def RISCV : Target {
   let AssemblyWriters = [RISCVAsmWriter];
   let AllowRegisterRenaming = 1;
 }
+
+include "THEAD/THEAD.td"
