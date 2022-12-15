@@ -1686,3 +1686,12 @@ include "RISCVInstrInfoZk.td"
 include "RISCVInstrInfoV.td"
 include "RISCVInstrInfoZfh.td"
 include "RISCVInstrInfoZicbo.td"
+
+//===----------------------------------------------------------------------===
+// T-HEAD extensions.
+//===----------------------------------------------------------------------===
+
+include "THEAD/THEADInstrFormats.td"
+
+include "THEAD/RISCVInstrInfoxtheadmac.td"
+include "THEAD/RISCVInstrInfoxtheadcondmov.td"

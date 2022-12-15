@@ -481,6 +481,8 @@ def TuneSiFive7 : SubtargetFeature<"sifive7", "RISCVProcFamily", "SiFive7",
                                    "SiFive 7-Series processors",
                                    [TuneNoDefaultUnroll]>;
 
+include "THEAD/THEAD.td"
+
 //===----------------------------------------------------------------------===//
 // Named operands for CSR instructions.
 //===----------------------------------------------------------------------===//
@@ -503,8 +505,8 @@ include "RISCVSchedSiFive7.td"
 // RISC-V processors supported.
 //===----------------------------------------------------------------------===//
 
-def : ProcessorModel<"generic-rv32", NoSchedModel, []>;
-def : ProcessorModel<"generic-rv64", NoSchedModel, [Feature64Bit]>;
+def : ProcessorModel<"generic-rv32", NoSchedModel, [FeatureExtxtheadcondmov, FeatureExtxtheadmac]>;
+def : ProcessorModel<"generic-rv64", NoSchedModel, [Feature64Bit, FeatureExtxtheadcondmov, FeatureExtxtheadmac]>;
 // Support generic for compatibility with other targets. The triple will be used
 // to change to the appropriate rv32/rv64 version.
 def : ProcessorModel<"generic", NoSchedModel, []>;
@@ -607,5 +609,3 @@ def RISCV : Target {
   let AssemblyWriters = [RISCVAsmWriter];
   let AllowRegisterRenaming = 1;
 }
-
-include "THEAD/THEAD.td"
