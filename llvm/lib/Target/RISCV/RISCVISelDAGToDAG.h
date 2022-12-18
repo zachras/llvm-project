@@ -129,7 +129,7 @@ public:
 
 private:
   bool doPeepholeSExtW(SDNode *Node);
-  bool doPeepholeSExtH(SDNode *Node);
+  bool doPeepholeMACSExtH(SDNode *Node);
   bool doPeepholeMaskedRVV(SDNode *Node);
 };
 
