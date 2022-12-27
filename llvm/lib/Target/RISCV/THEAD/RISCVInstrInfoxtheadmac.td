@@ -6,12 +6,19 @@ class MacNBitPatFrag<SDPatternOperator IRSDOperator, code predicate>
       : PatFrag<(ops node:$rd, node:$rs1, node:$rs2),
                 (XLenVT (IRSDOperator node:$rd, (mul node:$rs1, node:$rs2))),
                 predicate> {
-  assert !or(!eq(IRSDOperator, add), !eq(IRSDOperator, sub)), "MacNBitPatFrag accepts only \"add\" or \"sub\" SDPatternOperator values.";
-//TODO: assert for predicate?
+  
+	assert !or(!eq(IRSDOperator, add),
+						 !eq(IRSDOperator, sub)),
+						 "MacNBitPatFrag accepts only \"add\" or \"sub\" SDPatternOperator values.";
+
+  assert !or(!eq(predicate, "\n  return hasAllWUsers(Node);\n"),
+						 !eq(predicate, "\n  return hasAllHUsers(Node);\n")),
+						 "MacNBitPatFrag accepts only word or half word operation result usage predicate check.";
+
 }
 
 class MacWordPatFrag<SDPatternOperator IRSDOperator> : MacNBitPatFrag<IRSDOperator, [{
-  return hasAllWUsers(Node) && !hasAllHUsers(Node);
+  return hasAllWUsers(Node);
 }]>;
 
 class MacHalfWordPatFrag<SDPatternOperator IRSDOperator> : MacNBitPatFrag<IRSDOperator, [{
@@ -19,13 +26,16 @@ class MacHalfWordPatFrag<SDPatternOperator IRSDOperator> : MacNBitPatFrag<IRSDOp
 }]>; 
 
 //===----------------------------------------------------------------------===//
-// A pattern class records of which specify 3 operands. The difference between
-// the initial and the resultant DAG is only the DAG operator.
+// A pattern class records of which specify 3 input operands. The difference
+// between the initial and the resultant DAG is only the DAG operator.
 //===----------------------------------------------------------------------===//
 
 class PatGprGprWithRd<SDPatternOperator IRSDOperator, RVInst RVInstruction>
     : Pat<(IRSDOperator GPR:$rd, GPR:$rs1, GPR:$rs2), (RVInstruction GPR:$rd, GPR:$rs1, GPR:$rs2)> {
-  //TODO Add assert for rdcp=rd?
+	
+	assert !isa<THEADRFormatInstruction>(RVInstruction),
+						 "PatGprGprWithRd accepts only THEADRFormatInstruction RVInst values.";
+
 }
 
 //===----------------------------------------------------------------------===//
@@ -35,14 +45,11 @@ class PatGprGprWithRd<SDPatternOperator IRSDOperator, RVInst RVInstruction>
 let Predicates = [HasExtxtheadmac] in {
 
 def TH_MULA : THEADRFormatInstruction<0b0010000, 0b001, "th.mula", "$rd, $rs1, $rs2">;
-							//Sched<[WriteMULA, ReadMULA, ReadMULA, ReadMULA]>;
 
 def TH_MULAH : THEADRFormatInstruction<0b0010100, 0b001, "th.mulah", "$rd, $rs1, $rs2">;
- 	 	 					 //Sched<[WriteMULAH, ReadMULAH, ReadMULAH, ReadMULAH]>;
 
 let Predicates = [IsRV64, HasExtxtheadmac] in
 def TH_MULAW : THEADRFormatInstruction<0b0010010, 0b001, "th.mulaw", "$rd, $rs1, $rs2">;
-							 //Sched<[WriteMULAW, ReadMULAW, ReadMULAW, ReadMULAW]>;
 
 def TH_MULS : THEADRFormatInstruction<0b0010001, 0b001, "th.muls", "$rd, $rs1, $rs2">;
 def TH_MULSH : THEADRFormatInstruction<0b0010101, 0b001, "th.mulsh", "$rd, $rs1, $rs2">;
