@@ -25,6 +25,25 @@
 
 using namespace llvm;
 
+namespace {
+	bool isMulOpcode(const SDValue &Ni) {
+		
+		if (!Ni.isMachineOpcode())
+			return false;
+
+		switch (Ni.getMachineOpcode()) {
+		default:
+			return false;
+		case RISCV::MUL:
+		case RISCV::MULH:
+		case RISCV::MULHSU:
+		case RISCV::MULHU:
+		case RISCV::MULW:
+			return true;
+		}
+	}
+}
+
 #define DEBUG_TYPE "riscv-isel"
 
 namespace llvm {
@@ -2346,7 +2365,7 @@ bool RISCVDAGToDAGISel::selectRVVSimm5(SDValue N, unsigned Width,
 }
 
 // Try to remove half-to-XLen sign extension if the input is TH_MULAH or TH_MULSH.
-//TODO: Check if input can be made into a TH_MULAH or TH_MULSH instruction cheaply.
+// or can be made into a TH_MULAH or TH_MULSH instruction cheaply.
 bool RISCVDAGToDAGISel::doPeepholeMACSExtH(SDNode *N) {
 	const auto &ShAmtForSExtH = Subtarget->getXLen() - 16;
 
@@ -2392,6 +2411,9 @@ bool RISCVDAGToDAGISel::doPeepholeSExtW(SDNode *N) {
   if (!N0.isMachineOpcode())
     return false;
 
+  SDValue N00 = N0.getOperand(0);
+  SDValue N01 = N0.getOperand(1);
+
   switch (N0.getMachineOpcode()) {
   default:
     break;
@@ -2400,21 +2422,28 @@ bool RISCVDAGToDAGISel::doPeepholeSExtW(SDNode *N) {
   case RISCV::SUB:
   case RISCV::MUL:
   case RISCV::SLLI: {
-    // Convert sext.w+add/sub/mul to their W instructions. This will create
+    // Convert sext.w+add/sub/mul or sext.w+(add,mul) to their W instructions. This will create
     // a new independent instruction. This improves latency.
     unsigned Opc;
     switch (N0.getMachineOpcode()) {
     default:
       llvm_unreachable("Unexpected opcode!");
-    case RISCV::ADD:  Opc = RISCV::ADDW;  break;
-    case RISCV::ADDI: Opc = RISCV::ADDIW; break;
-    case RISCV::SUB:  Opc = RISCV::SUBW;  break;
+    case RISCV::ADD:
+  	  // Look for the TH_MULAW pattern, mul rd, rs1, rs2
+		  //                                add rd2, rd2, rd
+			
+		  Opc = isMulOpcode(N01) && N0 == N00 ? RISCV::TH_MULAW : RISCV::ADDW;
+		  break;
+    
+		case RISCV::ADDI: Opc = RISCV::ADDIW; break;
+    case RISCV::SUB:
+  	  // Look for the TH_MULSW pattern, mul rd, rs1, rs2
+		  //                                sub rd2, rd2, rd
+		  Opc = isMulOpcode(N01) && N0 == N00 ? RISCV::TH_MULSW : RISCV::SUBW;
+		  break;
     case RISCV::MUL:  Opc = RISCV::MULW;  break;
     case RISCV::SLLI: Opc = RISCV::SLLIW; break;
     }
-
-    SDValue N00 = N0.getOperand(0);
-    SDValue N01 = N0.getOperand(1);
 
     // Shift amount needs to be uimm5.
     if (N0.getMachineOpcode() == RISCV::SLLI &&
@@ -2435,11 +2464,39 @@ bool RISCVDAGToDAGISel::doPeepholeSExtW(SDNode *N) {
   case RISCV::MULW:
   case RISCV::SLLIW:
   case RISCV::GREVIW:
-  case RISCV::GORCIW:
+  case RISCV::GORCIW: {
+    SDNode *replacer = nullptr;
+		unsigned macOpcode;
+
+    switch (N0.getMachineOpcode()) {
+      default:
+        replacer = N0.getNode();
+        break;
+ 
+      case RISCV::ADDW:
+        macOpcode = RISCV::TH_MULAW;
+
+      case RISCV::SUBW:
+        macOpcode = RISCV::TH_MULSW;
+
+		    if (isMulOpcode(N01) && N0 == N00) {
+          replacer = CurDAG->getMachineNode(macOpcode, SDLoc(N), N->getValueType(0),
+                                            N00, N01);
+        }
+      
+        else {
+          replacer = N0.getNode();
+        }
+
+		    break;
+    }
     // Result is already sign extended just remove the sext.w.
     // NOTE: We only handle the nodes that are selected with hasAllWUsers.
-    ReplaceUses(N, N0.getNode());
+    assert(replacer != nullptr);
+    ReplaceUses(N, replacer);
     return true;
+  }
+
   }
 
   return false;
