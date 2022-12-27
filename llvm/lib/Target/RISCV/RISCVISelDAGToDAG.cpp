@@ -2376,25 +2376,72 @@ bool RISCVDAGToDAGISel::doPeepholeMACSExtH(SDNode *N) {
     return false;
 	
   SDValue N0 = N->getOperand(0);
+  SDValue N00 = N0.getOperand(0);
+
   if (!N0.isMachineOpcode() || N0->getMachineOpcode() != RISCV::SLLI
 														|| N0->getConstantOperandVal(1) != ShAmtForSExtH)
     return false;
 
-  SDValue N00 = N0->getOperand(0);
   if (!N00.isMachineOpcode())
     return false;
 	
+	//N is srai
+	//N0 is slli
 	switch (N00.getMachineOpcode()) {
-	//half-to-XLen sign extension is removed when:
-	//N is srai,
-	//N0 is slli,
-	//N00 is TH_MUL{A|S}H
 		default:
 			return false;	
 		case RISCV::TH_MULAH:
 		case RISCV::TH_MULSH:
+	//N00 is TH_MUL{A|S}H
 			ReplaceUses(N, N00.getNode());
 			return true;
+
+    case RISCV::ADD:
+    case RISCV::ADDW:
+    case RISCV::SUB:
+    case RISCV::SUBW: {
+	//N00 is ADD/SUB or ADDW/SUBW
+	//N000 is 1st operand of ADD/SUB or ADDW/SUBW
+	//N001 is 2nd operand of ADD/SUB or ADDW/SUBW
+      
+      unsigned macOpcode;
+
+      switch(N00.getMachineOpcode()) {
+        default:
+          llvm_unreachable("Unexpected opcode!");
+          break;
+        
+        case RISCV::ADD:
+        case RISCV::ADDW:
+          macOpcode = RISCV::TH_MULAH;
+          break;
+        
+        case RISCV::SUB:
+        case RISCV::SUBW:
+          macOpcode = RISCV::TH_MULSH;
+          break;
+      }      
+
+      SDValue N000 = N00.getOperand(0);
+      SDValue N001 = N00.getOperand(1);
+      
+      if (!N000.isMachineOpcode() || !N001.isMachineOpcode())
+        return false;
+
+      else if (isMulOpcode(N001) && N00 == N000) {
+        SDValue mulOperand0 = N001.getOperand(0);
+        SDValue mulOperand1 = N001.getOperand(1);
+
+        //TODO: Must check if the mul operands are machine opcodes?
+
+			  ReplaceUses(N, CurDAG->getMachineNode(macOpcode, SDLoc(N), N->getValueType(0),
+                                              N000, mulOperand0, mulOperand1));
+        return true;
+      }
+
+      else
+        return false;
+    }
 	}
 	
 }
