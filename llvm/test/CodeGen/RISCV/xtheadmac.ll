@@ -1,5 +1,5 @@
-; RUN: llc -march=riscv32 -mattr=+m < %s | FileCheck %s -check-prefixes=ALL,RV32
-; RUN: llc -march=riscv64 -mattr=+m < %s | FileCheck %s -check-prefixes=ALL,RV64
+; RUN: llc -march=riscv32 -mattr=+m -mattr=+xtheadmac < %s | FileCheck %s -check-prefixes=ALL,RV32
+; RUN: llc -march=riscv64 -mattr=+m -mattr=+xtheadmac < %s | FileCheck %s -check-prefixes=ALL,RV64
 
 ; ALL-LABEL: maddi16:
 
