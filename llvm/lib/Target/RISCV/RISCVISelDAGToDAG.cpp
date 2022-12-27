@@ -2497,9 +2497,14 @@ bool RISCVDAGToDAGISel::doPeepholeSExtW(SDNode *N) {
         !isUInt<5>(cast<ConstantSDNode>(N01)->getSExtValue()))
       break;
 
-    SDNode *Result =
-        CurDAG->getMachineNode(Opc, SDLoc(N), N->getValueType(0),
-                               N00, N01);
+    SDNode *Result;
+
+    if (Opc == RISCV::TH_MULAW || Opc == RISCV::TH_MULSW)
+      Result = CurDAG->getMachineNode(Opc, SDLoc(N), N->getValueType(0),
+                                      N00, N01.getOperand(0), N01.getOperand(1));
+    else
+      Result = CurDAG->getMachineNode(Opc, SDLoc(N), N->getValueType(0),
+                                      N00, N01);
     ReplaceUses(N, Result);
     return true;
   }
@@ -2513,7 +2518,6 @@ bool RISCVDAGToDAGISel::doPeepholeSExtW(SDNode *N) {
   case RISCV::GREVIW:
   case RISCV::GORCIW: {
     SDNode *replacer = nullptr;
-		unsigned macOpcode;
 
     switch (N0.getMachineOpcode()) {
       default:
@@ -2521,14 +2525,12 @@ bool RISCVDAGToDAGISel::doPeepholeSExtW(SDNode *N) {
         break;
  
       case RISCV::ADDW:
-        macOpcode = RISCV::TH_MULAW;
-
-      case RISCV::SUBW:
-        macOpcode = RISCV::TH_MULSW;
+      case RISCV::SUBW: {
+        const auto &macOpcode = N0.getMachineOpcode() == RISCV::ADDW ? RISCV::TH_MULAW : RISCV::TH_MULSW;
 
 		    if (isMulOpcode(N01) && N0 == N00) {
           replacer = CurDAG->getMachineNode(macOpcode, SDLoc(N), N->getValueType(0),
-                                            N00, N01);
+                                            N00, N01.getOperand(0), N01.getOperand(1));
         }
       
         else {
@@ -2536,6 +2538,7 @@ bool RISCVDAGToDAGISel::doPeepholeSExtW(SDNode *N) {
         }
 
 		    break;
+      }
     }
     // Result is already sign extended just remove the sext.w.
     // NOTE: We only handle the nodes that are selected with hasAllWUsers.
