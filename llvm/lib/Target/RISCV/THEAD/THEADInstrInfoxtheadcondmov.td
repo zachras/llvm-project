@@ -4,8 +4,8 @@ let Predicates = [HasExtxtheadcondmov] in {
 // xtheadcondmov Instruction records.
 //===----------------------------------------------------------------------===//
 
-def TH_MVEQZ : THEADRFormatInstruction<0b0100000, 0b001, "th.mveqz", "$rd, $rs1, $rs2">;
-def TH_MVNEZ : THEADRFormatInstruction<0b0100001, 0b001, "th.mvnez", "$rd, $rs1, $rs2">;
+def TH_MVEQZ : RdRdRs2InstructionFormat<0b0100000, 0b001, "th.mveqz", "$rd, $rs1, $rs2">;
+def TH_MVNEZ : RdRdRs2InstructionFormat<0b0100001, 0b001, "th.mvnez", "$rd, $rs1, $rs2">;
 
 //===----------------------------------------------------------------------===//
 // xtheadcondmov Instruction patterns.
