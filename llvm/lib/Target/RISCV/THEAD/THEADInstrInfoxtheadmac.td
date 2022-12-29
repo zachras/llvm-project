@@ -33,8 +33,8 @@ class MacHalfWordPatFrag<SDPatternOperator IRSDOperator> : MacNBitPatFrag<IRSDOp
 class PatGprGprWithRd<SDPatternOperator IRSDOperator, RVInst RVInstruction>
     : Pat<(IRSDOperator GPR:$rd, GPR:$rs1, GPR:$rs2), (RVInstruction GPR:$rd, GPR:$rs1, GPR:$rs2)> {
 	
-	assert !isa<THEADRFormatInstruction>(RVInstruction),
-						 "PatGprGprWithRd accepts only THEADRFormatInstruction RVInst values.";
+	assert !isa<RdRdRs2InstructionFormat>(RVInstruction),
+						 "PatGprGprWithRd accepts only RdRdRs2InstructionFormat RVInst values.";
 
 }
 
@@ -44,18 +44,18 @@ class PatGprGprWithRd<SDPatternOperator IRSDOperator, RVInst RVInstruction>
 
 let Predicates = [HasExtxtheadmac] in {
 
-def TH_MULA : THEADRFormatInstruction<0b0010000, 0b001, "th.mula", "$rd, $rs1, $rs2">;
+def TH_MULA : RdRdRs2InstructionFormat<0b0010000, 0b001, "th.mula", "$rd, $rs1, $rs2">;
 
-def TH_MULAH : THEADRFormatInstruction<0b0010100, 0b001, "th.mulah", "$rd, $rs1, $rs2">;
-
-let Predicates = [IsRV64, HasExtxtheadmac] in
-def TH_MULAW : THEADRFormatInstruction<0b0010010, 0b001, "th.mulaw", "$rd, $rs1, $rs2">;
-
-def TH_MULS : THEADRFormatInstruction<0b0010001, 0b001, "th.muls", "$rd, $rs1, $rs2">;
-def TH_MULSH : THEADRFormatInstruction<0b0010101, 0b001, "th.mulsh", "$rd, $rs1, $rs2">;
+def TH_MULAH : RdRdRs2InstructionFormat<0b0010100, 0b001, "th.mulah", "$rd, $rs1, $rs2">;
 
 let Predicates = [IsRV64, HasExtxtheadmac] in
-def TH_MULSW : THEADRFormatInstruction<0b0010011, 0b001, "th.mulsw", "$rd, $rs1, $rs2">;
+def TH_MULAW : RdRdRs2InstructionFormat<0b0010010, 0b001, "th.mulaw", "$rd, $rs1, $rs2">;
+
+def TH_MULS : RdRdRs2InstructionFormat<0b0010001, 0b001, "th.muls", "$rd, $rs1, $rs2">;
+def TH_MULSH : RdRdRs2InstructionFormat<0b0010101, 0b001, "th.mulsh", "$rd, $rs1, $rs2">;
+
+let Predicates = [IsRV64, HasExtxtheadmac] in
+def TH_MULSW : RdRdRs2InstructionFormat<0b0010011, 0b001, "th.mulsw", "$rd, $rs1, $rs2">;
 
 //===----------------------------------------------------------------------===//
 // xtheadmac Instruction patterns.
