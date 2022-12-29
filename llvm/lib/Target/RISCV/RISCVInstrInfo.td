@@ -1693,5 +1693,4 @@ include "RISCVInstrInfoZicbo.td"
 
 include "THEAD/THEADInstrFormats.td"
 
-include "THEAD/RISCVInstrInfoxtheadmac.td"
-include "THEAD/RISCVInstrInfoxtheadcondmov.td"
+include "THEAD/THEADInstrInfoxtheadcondmov.td"
