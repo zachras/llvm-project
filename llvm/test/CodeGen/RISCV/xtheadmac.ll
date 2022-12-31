@@ -1,12 +1,12 @@
 ; RUN: llc -march=riscv32 -mattr=+m -mattr=+xtheadmac < %s | FileCheck %s -check-prefixes=ALL,RV32
 ; RUN: llc -march=riscv64 -mattr=+m -mattr=+xtheadmac < %s | FileCheck %s -check-prefixes=ALL,RV64
 
-; ALL-LABEL: maddi16:
+; ALL-LABEL: madd.all.i16:
 
-; ALL-RV: th.mulah a0, a1, a2
-; ALL-RV: ret
+; ALL: th.mulah a0, a1, a2
+; ALL: ret
 
-define i16 @maddi16(i16 %rdcp, i16 %rs1, i16 %rs2) {
+define signext i16 @madd.all.i16(i16 %rdcp, i16 %rs1, i16 %rs2) {
 entry:
 
   %mul = mul i16 %rs1, %rs2
@@ -17,7 +17,7 @@ entry:
 
 }
 
-; ALL-LABEL: maddi32:
+; ALL-LABEL: madd.all.i32:
 
 ; RV32: th.mula a0, a1, a2
 ; RV32: ret
@@ -25,7 +25,7 @@ entry:
 ; RV64: th.mulaw a0, a1, a2
 ; RV64: ret
 
-define i32 @maddi32(i32 %rdcp, i32 %rs1, i32 %rs2) {
+define signext i32 @madd.all.i32(i32 %rdcp, i32 %rs1, i32 %rs2) {
 entry:
 
   %mul = mul i32 %rs1, %rs2
@@ -36,14 +36,23 @@ entry:
 
 }
 
-; ALL-LABEL: maddi64:
+; ALL-LABEL: madd.all.i64:
 
-; TODO for RV32 
+; RV32: mulhu	a6, a2, a4
+; RV32: th.mula	a6, a2, a5
+; RV32: th.mula	a6, a3, a4
+; RV32: mv	a3, a0
+; RV32: th.mula	a3, a2, a4
+; RV32: sltu	a0, a3, a0
+; RV32: add	a1, a1, a6
+; RV32: add	a1, a1, a0
+; RV32: mv	a0, a3
+; RV32: ret
 
 ; RV64: th.mula a0, a1, a2
 ; RV64: ret
 
-define i64 @maddi64(i64 %rdcp, i64 %rs1, i64 %rs2) {
+define signext i64 @madd.all.i64(i64 %rdcp, i64 %rs1, i64 %rs2) {
 entry:
 
   %mul = mul i64 %rs1, %rs2
@@ -54,12 +63,12 @@ entry:
 
 }
 
-; ALL-LABEL: msubi16:
+; ALL-LABEL: msub.all.i16:
 
-; ALL-RV: th.mulsh a0, a1, a2
-; ALL-RV: ret
+; ALL: th.mulsh a0, a1, a2
+; ALL: ret
 
-define i16 @msubi16(i16 %rdcp, i16 %rs1, i16 %rs2) {
+define signext i16 @msub.all.i16(i16 %rdcp, i16 %rs1, i16 %rs2) {
 entry:
 
   %mul = mul i16 %rs1, %rs2
@@ -70,7 +79,7 @@ entry:
 
 }
 
-; ALL-LABEL: msubi32:
+; ALL-LABEL: msub.all.i32:
 
 ; RV32: th.muls a0, a1, a2
 ; RV32: ret
@@ -78,7 +87,7 @@ entry:
 ; RV64: th.mulsw a0, a1, a2
 ; RV64: ret
 
-define i32 @msubi32(i32 %rdcp, i32 %rs1, i32 %rs2) {
+define signext i32 @msub.all.i32(i32 %rdcp, i32 %rs1, i32 %rs2) {
 entry:
 
   %mul = mul i32 %rs1, %rs2
@@ -89,14 +98,22 @@ entry:
 
 }
 
-; ALL-LABEL: msubi64:
+; ALL-LABEL: msub.all.i64:
 
-; TODO for RV32
+; RV32: mulhu	a6, a2, a4
+; RV32: th.mula	a6, a2, a5
+; RV32: th.mula	a6, a3, a4
+; RV32: mul	a3, a2, a4
+; RV32: sltu	a3, a0, a3
+; RV32: th.muls	a0, a2, a4
+; RV32: sub	a1, a1, a6
+; RV32: sub	a1, a1, a3
+; RV32: ret
 
 ; RV64: th.muls a0, a1, a2
 ; RV64: ret
 
-define i64 @msubi64(i64 %rdcp, i64 %rs1, i64 %rs2) {
+define signext i64 @msub.all.i64(i64 %rdcp, i64 %rs1, i64 %rs2) {
 entry:
 
   %mul = mul i64 %rs1, %rs2
@@ -107,14 +124,258 @@ entry:
 
 }
 
-; ALL-LABEL: maddi64.v2:
+; ALL-LABEL: madd.i16.to.i32:
 
-; TODO for RV32
+; ALL: th.mulah a0, a1, a2
+; ALL: ret
+
+define signext i32 @madd.i16.to.i32(i16 %rdcp, i16 %rs1, i16 %rs2) {
+entry:
+
+  %mul = mul i16 %rs1, %rs2
+
+  %rd = add i16 %rdcp, %mul
+
+  %rd.2 = sext i16 %rd to i32
+
+  ret i32 %rd.2
+}
+
+; ALL-LABEL: madd.i16.to.i64:
+
+; RV32: th.mulah	a0, a1, a2
+; RV32: slli	a1, a0, 16
+; RV32: srai	a1, a1, 31
+; RV32: ret
+
+; RV64: th.mulah a0, a1, a2
+; RV64: ret
+
+define signext i64 @madd.i16.to.i64(i16 %rdcp, i16 %rs1, i16 %rs2) {
+entry:
+
+  %mul = mul i16 %rs1, %rs2
+
+  %rd = add i16 %rdcp, %mul
+
+  %rd.2 = sext i16 %rd to i64
+
+  ret i64 %rd.2
+}
+
+; ALL-LABEL: madd.i32.to.i16:
+
+; ALL: th.mulah a0, a1, a2
+; ALL: ret
+
+define signext i16 @madd.i32.to.i16(i32 %rdcp, i32 %rs1, i32 %rs2) {
+entry:
+
+  %mul = mul i32 %rs1, %rs2
+
+  %rd = add i32 %rdcp, %mul
+
+  %rd.2 = trunc i32 %rd to i16
+
+  ret i16 %rd.2
+}
+
+; ALL-LABEL: madd.i32.to.i64:
+
+
+; RV32: th.mula	a0, a1, a2
+; RV32: srai	a1, a0, 31
+; RV32: ret
+
+; RV64: th.mulaw a0, a1, a2
+; RV64: ret
+
+define signext i64 @madd.i32.to.i64(i32 %rdcp, i32 %rs1, i32 %rs2) {
+entry:
+
+  %mul = mul i32 %rs1, %rs2
+
+  %rd = add i32 %rdcp, %mul
+
+  %rd.2 = sext i32 %rd to i64
+
+  ret i64 %rd.2
+}
+
+; ALL-LABEL: madd.i64.to.i16:
+
+; RV32: th.mulah	a0, a2, a4
+; RV32: ret
+
+; RV64: th.mulah a0, a1, a2
+; RV64: ret
+
+define signext i16 @madd.i64.to.i16(i64 %rdcp, i64 %rs1, i64 %rs2) {
+entry:
+
+  %mul = mul i64 %rs1, %rs2
+
+  %rd = add i64 %rdcp, %mul
+
+  %rd.2 = trunc i64 %rd to i16
+
+  ret i16 %rd.2
+}
+
+; ALL-LABEL: madd.i64.to.i32:
+
+; RV32: th.mula	a0, a2, a4
+; RV32: ret
+
+; RV64: th.mulaw a0, a1, a2
+; RV64: ret
+
+define signext i32 @madd.i64.to.i32(i64 %rdcp, i64 %rs1, i64 %rs2) {
+entry:
+
+  %mul = mul i64 %rs1, %rs2
+
+  %rd = add i64 %rdcp, %mul
+
+  %rd.2 = trunc i64 %rd to i32
+
+  ret i32 %rd.2
+}
+
+; ALL-LABEL: msub.i16.to.i32:
+
+; ALL: th.mulsh a0, a1, a2
+; ALL: ret
+
+define signext i32 @msub.i16.to.i32(i16 %rdcp, i16 %rs1, i16 %rs2) {
+entry:
+
+  %mul = mul i16 %rs1, %rs2
+
+  %rd = sub i16 %rdcp, %mul
+
+  %rd.2 = sext i16 %rd to i32
+
+  ret i32 %rd.2
+}
+
+; ALL-LABEL: msub.i16.to.i64:
+
+; RV32: th.mulsh	a0, a1, a2
+; RV32: slli	a1, a0, 16
+; RV32: srai	a1, a1, 31
+; RV32: ret
+
+; RV64: th.mulsh a0, a1, a2
+; RV64: ret
+
+define signext i64 @msub.i16.to.i64(i16 %rdcp, i16 %rs1, i16 %rs2) {
+entry:
+
+  %mul = mul i16 %rs1, %rs2
+
+  %rd = sub i16 %rdcp, %mul
+
+  %rd.2 = sext i16 %rd to i64
+
+  ret i64 %rd.2
+}
+
+; ALL-LABEL: msub.i32.to.i16:
+
+; ALL: th.mulsh a0, a1, a2
+; ALL: ret
+
+define signext i16 @msub.i32.to.i16(i32 %rdcp, i32 %rs1, i32 %rs2) {
+entry:
+
+  %mul = mul i32 %rs1, %rs2
+
+  %rd = sub i32 %rdcp, %mul
+
+  %rd.2 = trunc i32 %rd to i16
+
+  ret i16 %rd.2
+}
+
+; ALL-LABEL: msub.i32.to.i64:
+
+
+; RV32: th.muls	a0, a1, a2
+; RV32: srai	a1, a0, 31
+; RV32: ret
+
+; RV64: th.mulsw a0, a1, a2
+; RV64: ret
+
+define signext i64 @msub.i32.to.i64(i32 %rdcp, i32 %rs1, i32 %rs2) {
+entry:
+
+  %mul = mul i32 %rs1, %rs2
+
+  %rd = sub i32 %rdcp, %mul
+
+  %rd.2 = sext i32 %rd to i64
+
+  ret i64 %rd.2
+}
+
+; ALL-LABEL: msub.i64.to.i16:
+
+; RV32: th.mulsh	a0, a2, a4
+; RV32: ret
+
+; RV64: th.mulsh a0, a1, a2
+; RV64: ret
+
+define signext i16 @msub.i64.to.i16(i64 %rdcp, i64 %rs1, i64 %rs2) {
+entry:
+
+  %mul = mul i64 %rs1, %rs2
+
+  %rd = sub i64 %rdcp, %mul
+
+  %rd.2 = trunc i64 %rd to i16
+
+  ret i16 %rd.2
+}
+
+; ALL-LABEL: msub.i64.to.i32:
+
+; RV32: th.muls	a0, a2, a4
+; RV32: ret
+
+; RV64: th.mulsw a0, a1, a2
+; RV64: ret
+
+define signext i32 @msub.i64.to.i32(i64 %rdcp, i64 %rs1, i64 %rs2) {
+entry:
+
+  %mul = mul i64 %rs1, %rs2
+
+  %rd = sub i64 %rdcp, %mul
+
+  %rd.2 = trunc i64 %rd to i32
+
+  ret i32 %rd.2
+}
+
+; ALL-LABEL: madd.all.type.mix.to.i64:
+
+
+; RV32: mulh	a5, a2, a3
+; RV32: mv	a4, a0
+; RV32: th.mula	a4, a2, a3
+; RV32: sltu	a0, a4, a0
+; RV32: add	a1, a1, a5
+; RV32: add	a1, a1, a0
+; RV32: mv	a0, a4
+; RV32: ret
 
 ; RV64: th.mula a0, a1, a2
 ; RV64: ret
 
-define i64 @maddi64.v2(i64 %rdcp, i16 %rs1, i32 %rs2) {
+define signext i64 @madd.all.type.mix.to.i64(i64 %rdcp, i16 signext %rs1, i32 signext %rs2) {
 entry:
 
   %rs1.2 = sext i16 %rs1 to i64
@@ -126,63 +387,4 @@ entry:
 
   ret i64 %rd
 
-}
-
-declare void @f(i32 %x)
-
-; ALL-LABEL: mulah.despite.i32.usage:
-
-; TODO for RV32
-
-; RV64: th.mulah a0, a1, a2
-; RV64: call f
-; RV64: li a0, 1
-; RV64: ret
-
-define i1 @mulah.despite.i32.usage(i16 %rdcp, i16 %rs1, i16 %rs2) {
-entry:
-
-  %mul = mul i16 %rs1, %rs2
-
-  %rd = add i16 %rdcp, %mul
-
-  call void @f(i16 signext %rd)
-
-  ret i1 true
-}
-
-declare i64 @fi64(...)
-declare void @gi32(i32 noundef signext)
-
-; ALL-LABEL: mulaw.from.i64.operands
-
-; TODO for RV32
-
-; RV64: addi    sp, sp, -32
-; RV64: sd      ra, 24(sp)                      
-; RV64: sd      s0, 16(sp)                      
-; RV64: sd      s1, 8(sp)                       
-; RV64: call    fi64
-; RV64: mv      s0, a0
-; RV64: call    fi64
-; RV64: mv      s1, a0
-; RV64: call    fi64
-; RV64: th.mulaw        a0, s1, s0
-; RV64: call    gi32
-; RV64: li      a0, 1
-; RV64: ld      ra, 24(sp)                      
-; RV64: ld      s0, 16(sp)                      
-; RV64: ld      s1, 8(sp)                       
-; RV64: addi    sp, sp, 32
-; RV64: ret
-
-define i1 @mulaw.from.i64.operands() {
-  %call = tail call i64 @fi64()
-  %call1 = tail call i64 @fi64()
-  %call2 = tail call i64 @fi64()
-  %mul = mul nsw i64 %call1, %call
-  %add = add nsw i64 %call2, %mul
-  %conv = trunc i64 %add to i32
-  tail call void @gi32(i32 noundef signext %conv)
-  ret i1 1
 }
