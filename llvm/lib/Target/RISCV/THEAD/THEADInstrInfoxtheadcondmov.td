@@ -17,4 +17,7 @@ def : Pat<(select (XLenVT (seteq GPR:$rs2, 0)), GPR:$rs1, GPR:$rdcp),
 def : Pat<(select (XLenVT (setne GPR:$rs2, 0)), GPR:$rs1, GPR:$rdcp),
           (TH_MVNEZ GPR:$rdcp, GPR:$rs1, GPR:$rs2)>;
 
+def : Pat<(select GPR:$rs2, GPR:$rs1, GPR:$rdcp),
+          (TH_MVNEZ GPR:$rdcp, GPR:$rs1, GPR:$rs2)>;
+
 }
