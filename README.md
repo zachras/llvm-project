@@ -135,9 +135,9 @@ Cross-compilation to RISC-V requires [the RISC-V GNU Compiler Toolchain](https:/
 After following the indicated steps there to install Newlib, the workflow for compiling an arbitrary source code file is the
 following:
 
-* ``clang --sysroot=/opt/riscv/riscv64-unknown-elf -gcc-toolchain=/opt/riscv --target=riscv64 -march=rv64gc -S -emit-llvm main.c``
+* ``clang --sysroot=/opt/riscv/riscv64-unknown-elf --gcc-toolchain=/opt/riscv --target=riscv64 -march=rv64gc -S -emit-llvm main.c``
 * ``llc -filetype=obj -march=riscv64 -mattr=+m -mattr=+xtheadmac -mattr=+xtheadcondmov main.ll``
-* ``clang --sysroot=/opt/riscv/riscv64-unknown-elf -gcc-toolchain=/opt/riscv --target=riscv64 -march=rv64gc main.o -o main``
+* ``clang --sysroot=/opt/riscv/riscv64-unknown-elf --gcc-toolchain=/opt/riscv --target=riscv64 -march=rv64gc main.o -o main``
 
 ## Getting in touch
 
