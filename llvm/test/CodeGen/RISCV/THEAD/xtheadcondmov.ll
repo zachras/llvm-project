@@ -29,7 +29,7 @@ entry:
   ret i32 %rd
 }
 
-; ALL-LABEL: mveqz3:
+; ALL-LABEL: mveqz2:
 
 ; RV32-TH-MVEQZ: or a4, a4, a5
 ; RV32-TH-MVEQZ: th.mveqz a0, a2, a4
@@ -39,7 +39,7 @@ entry:
 ; RV64-TH-MVEQZ: th.mveqz a0, a1, a2
 ; RV64-TH-MVEQZ: ret
 
-define i64 @mveqz3(i64 %rdcp, i64 %rs1, i64 %rs2) {
+define i64 @mveqz2(i64 %rdcp, i64 %rs1, i64 %rs2) {
 entry:
 
   %cmp = icmp eq i64 %rs2, 0
@@ -48,7 +48,7 @@ entry:
   ret i64 %rd
 }
 
-; ALL-LABEL: mvnez3:
+; ALL-LABEL: mvnez2:
 
 ; RV32-TH-MVNEZ: or a4, a4, a5
 ; RV32-TH-MVNEZ: th.mvnez a0, a2, a4
@@ -58,7 +58,7 @@ entry:
 ; RV64-TH-MVNEZ: th.mvnez a0, a1, a2
 ; RV64-TH-MVNEZ: ret
 
-define i64 @mvnez3(i64 %rdcp, i64 %rs1, i64 %rs2) {
+define i64 @mvnez2(i64 %rdcp, i64 %rs1, i64 %rs2) {
 entry:
 
   %cmp = icmp ne i64 %rs2, 0
