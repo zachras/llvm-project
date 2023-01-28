@@ -1,5 +1,9 @@
 # The LLVM Compiler Infrastructure
 
+This fork of the LLVM project is part of the Bachelor's Thesis of
+Zacharias Rasoulis (with SID: csd4347) from the Computer Science Department
+of the University of Crete.
+
 This directory and its sub-directories contain the source code for LLVM,
 a toolkit for the construction of highly optimized compilers,
 optimizers, and run-time environments.
