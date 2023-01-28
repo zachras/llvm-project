@@ -108,11 +108,16 @@ This is an example work-flow and configuration to get and build the LLVM source:
 
       * For more information see [CMake](https://llvm.org/docs/CMake.html).
 
-3. Configure and build LLVM and Clang for RISC-V + T-HEAD cross-compilation:
+Since this thesis is **focused on the RISC-V LLVM backend**,
+a bash script file that automates the CMake process is provided.
+The steps provided below configure and build LLVM and Clang for
+RISC-V only. Of course, you are free to modify it and tailor it
+to your needs. If your computer is fast enough, consider increasing
+the value of the paramerter ``DLLVM_PARALLEL_LINK_JOBS``.
       
-      * ``./cmakeconf.sh``
-      * ``cd build``
-      * ``ninja``
+* ``./cmakeconf.sh``
+* ``cd build``
+* ``ninja``
 
 Consult the
 [Getting Started with LLVM](https://llvm.org/docs/GettingStarted.html#getting-started-with-llvm)
