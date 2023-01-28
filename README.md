@@ -108,11 +108,27 @@ This is an example work-flow and configuration to get and build the LLVM source:
 
       * For more information see [CMake](https://llvm.org/docs/CMake.html).
 
+3. Configure and build LLVM and Clang for RISC-V + T-HEAD cross-compilation:
+      
+      * ``./cmakeconf.sh``
+      * ``cd build``
+      * ``ninja``
+
 Consult the
 [Getting Started with LLVM](https://llvm.org/docs/GettingStarted.html#getting-started-with-llvm)
 page for detailed information on configuring and compiling LLVM. You can visit
 [Directory Layout](https://llvm.org/docs/GettingStarted.html#directory-layout)
 to learn about the layout of the source code tree.
+
+### Compilation Workflow
+
+Cross-compilation to RISC-V requires [the RISC-V GNU Compiler Toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain).
+After following the indicated steps there to install Newlib, the workflow for compiling an arbitrary source code file is the
+following:
+
+* ``clang --sysroot=/opt/riscv/riscv64-unknown-elf -gcc-toolchain=/opt/riscv --target=riscv64 -march=rv64gc -S -emit-llvm main.c``
+* ``llc -filetype=obj -march=riscv64 -mattr=+m -mattr=+xtheadmac -mattr=+xtheadcondmov main.ll``
+* ``clang --sysroot=/opt/riscv/riscv64-unknown-elf -gcc-toolchain=/opt/riscv --target=riscv64 -march=rv64gc main.o -o main``
 
 ## Getting in touch
 
