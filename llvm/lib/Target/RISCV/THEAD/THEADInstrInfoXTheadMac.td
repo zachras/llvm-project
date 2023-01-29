@@ -39,31 +39,31 @@ class PatGprGprWithRd<SDPatternOperator IRSDOperator, RVInst RVInstruction>
 }
 
 //===----------------------------------------------------------------------===//
-// xtheadmac Instruction records.
+// XTheadMac Instruction records.
 //===----------------------------------------------------------------------===//
 
-let Predicates = [HasExtxtheadmac] in {
+let Predicates = [HasExtXTheadMac] in {
 
 def TH_MULA : RdRdRs2InstructionFormat<0b0010000, 0b001, "th.mula", "$rd, $rs1, $rs2">;
 
 def TH_MULAH : RdRdRs2InstructionFormat<0b0010100, 0b001, "th.mulah", "$rd, $rs1, $rs2">;
 
-let Predicates = [IsRV64, HasExtxtheadmac] in
+let Predicates = [IsRV64, HasExtXTheadMac] in
 def TH_MULAW : RdRdRs2InstructionFormat<0b0010010, 0b001, "th.mulaw", "$rd, $rs1, $rs2">;
 
 def TH_MULS : RdRdRs2InstructionFormat<0b0010001, 0b001, "th.muls", "$rd, $rs1, $rs2">;
 def TH_MULSH : RdRdRs2InstructionFormat<0b0010101, 0b001, "th.mulsh", "$rd, $rs1, $rs2">;
 
-let Predicates = [IsRV64, HasExtxtheadmac] in
+let Predicates = [IsRV64, HasExtXTheadMac] in
 def TH_MULSW : RdRdRs2InstructionFormat<0b0010011, 0b001, "th.mulsw", "$rd, $rs1, $rs2">;
 
 //===----------------------------------------------------------------------===//
-// xtheadmac Instruction patterns.
+// XTheadMac Instruction patterns.
 //===----------------------------------------------------------------------===//
 
 def : PatGprGprWithRd<MacHalfWordPatFrag<add>, TH_MULAH>;
 
-let Predicates = [IsRV64, HasExtxtheadmac] in
+let Predicates = [IsRV64, HasExtXTheadMac] in
 def : PatGprGprWithRd<MacWordPatFrag<add>, TH_MULAW>;
 
 def : Pat<(add GPR:$rd, (mul GPR:$rs1, GPR:$rs2)),
@@ -71,7 +71,7 @@ def : Pat<(add GPR:$rd, (mul GPR:$rs1, GPR:$rs2)),
 
 def : PatGprGprWithRd<MacHalfWordPatFrag<sub>, TH_MULSH>;
 
-let Predicates = [IsRV64, HasExtxtheadmac] in
+let Predicates = [IsRV64, HasExtXTheadMac] in
 def : PatGprGprWithRd<MacWordPatFrag<sub>, TH_MULSW>;
 
 def : Pat<(sub GPR:$rd, (mul GPR:$rs1, GPR:$rs2)),

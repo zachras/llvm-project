@@ -9,9 +9,9 @@ def HasExtxtheadcondmov : Predicate<"Subtarget->hasExtxtheadcondmov()">,
                            AssemblerPredicate<(all_of FeatureExtxtheadcondmov),
                            "'xtheadcondmov' (T-Head Conditional Move Instructions)">;
 
-def FeatureExtxtheadmac
-    : SubtargetFeature<"xtheadmac", "HasExtxtheadmac", "true",
-                       "'xtheadmac' (T-Head Multiply-Add Instructions)">;
-def HasExtxtheadmac : Predicate<"Subtarget->hasExtxtheadmac()">,
-                           AssemblerPredicate<(all_of FeatureExtxtheadmac),
-                           "'xtheadmac' (T-Head Multiply-Add Instructions)">;
+def FeatureExtXTheadMac
+    : SubtargetFeature<"xtheadmac", "HasExtXTheadMac", "true",
+                       "'XTheadMac' (T-Head Multiply-Add Instructions)">;
+def HasExtXTheadMac : Predicate<"Subtarget->hasExtXTheadMac()">,
+                           AssemblerPredicate<(all_of FeatureExtXTheadMac),
+                           "'XTheadMac' (T-Head Multiply-Add Instructions)">;
