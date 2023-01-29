@@ -1,14 +1,14 @@
-let Predicates = [HasExtxtheadcondmov] in {
+let Predicates = [HasExtXTheadCondMov] in {
 
 //===----------------------------------------------------------------------===//
-// xtheadcondmov Instruction records.
+// XTheadCondMov Instruction records.
 //===----------------------------------------------------------------------===//
 
 def TH_MVEQZ : RdRdRs2InstructionFormat<0b0100000, 0b001, "th.mveqz", "$rd, $rs1, $rs2">;
 def TH_MVNEZ : RdRdRs2InstructionFormat<0b0100001, 0b001, "th.mvnez", "$rd, $rs1, $rs2">;
 
 //===----------------------------------------------------------------------===//
-// xtheadcondmov Instruction patterns.
+// XTheadCondMov Instruction patterns.
 //===----------------------------------------------------------------------===//
 
 def : Pat<(select (XLenVT (seteq GPR:$rs2, 0)), GPR:$rs1, GPR:$rdcp),

@@ -295,7 +295,7 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
 
     if (Subtarget.is64Bit())
       setOperationAction({ISD::FSHL, ISD::FSHR}, MVT::i32, Custom);
-  } else if (Subtarget.hasExtxtheadcondmov()) {
+  } else if (Subtarget.hasExtXTheadCondMov()) {
     setOperationAction(ISD::SELECT, XLenVT, Legal);
   } else {
     setOperationAction(ISD::SELECT, XLenVT, Custom);
