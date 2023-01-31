@@ -30,13 +30,8 @@ class MacHalfWordPatFrag<SDPatternOperator IRSDOperator> : MacNBitPatFrag<IRSDOp
 // between the initial and the resultant DAG is only the DAG operator.
 //===----------------------------------------------------------------------===//
 
-class PatGprGprWithRd<SDPatternOperator IRSDOperator, RVInst RVInstruction>
-    : Pat<(IRSDOperator GPR:$rdcp, GPR:$rs1, GPR:$rs2), (RVInstruction GPR:$rdcp, GPR:$rs1, GPR:$rs2)> {
-	
-	assert !isa<RdRdRs2InstructionFormat>(RVInstruction),
-						 "PatGprGprWithRd accepts only RdRdRs2InstructionFormat RVInst values.";
-
-}
+class PatGprGprWithRd<MacNBitPatFrag IRSDOperator, ReadRdRVInstR RVInstruction>
+    : Pat<(IRSDOperator GPR:$rdcp, GPR:$rs1, GPR:$rs2), (RVInstruction GPR:$rdcp, GPR:$rs1, GPR:$rs2)>;
 
 //===----------------------------------------------------------------------===//
 // XTheadMac Instruction records.
@@ -44,18 +39,18 @@ class PatGprGprWithRd<SDPatternOperator IRSDOperator, RVInst RVInstruction>
 
 let Predicates = [HasExtXTheadMac] in {
 
-def TH_MULA : RdRdRs2InstructionFormat<0b0010000, 0b001, "th.mula", "$rd, $rs1, $rs2">;
+def TH_MULA : ReadRdRVInstR<0b0010000, 0b001, "th.mula", "$rd, $rs1, $rs2">;
 
-def TH_MULAH : RdRdRs2InstructionFormat<0b0010100, 0b001, "th.mulah", "$rd, $rs1, $rs2">;
-
-let Predicates = [IsRV64, HasExtXTheadMac] in
-def TH_MULAW : RdRdRs2InstructionFormat<0b0010010, 0b001, "th.mulaw", "$rd, $rs1, $rs2">;
-
-def TH_MULS : RdRdRs2InstructionFormat<0b0010001, 0b001, "th.muls", "$rd, $rs1, $rs2">;
-def TH_MULSH : RdRdRs2InstructionFormat<0b0010101, 0b001, "th.mulsh", "$rd, $rs1, $rs2">;
+def TH_MULAH : ReadRdRVInstR<0b0010100, 0b001, "th.mulah", "$rd, $rs1, $rs2">;
 
 let Predicates = [IsRV64, HasExtXTheadMac] in
-def TH_MULSW : RdRdRs2InstructionFormat<0b0010011, 0b001, "th.mulsw", "$rd, $rs1, $rs2">;
+def TH_MULAW : ReadRdRVInstR<0b0010010, 0b001, "th.mulaw", "$rd, $rs1, $rs2">;
+
+def TH_MULS : ReadRdRVInstR<0b0010001, 0b001, "th.muls", "$rd, $rs1, $rs2">;
+def TH_MULSH : ReadRdRVInstR<0b0010101, 0b001, "th.mulsh", "$rd, $rs1, $rs2">;
+
+let Predicates = [IsRV64, HasExtXTheadMac] in
+def TH_MULSW : ReadRdRVInstR<0b0010011, 0b001, "th.mulsw", "$rd, $rs1, $rs2">;
 
 //===----------------------------------------------------------------------===//
 // XTheadMac Instruction patterns.
