@@ -45,7 +45,7 @@ private:
   RISCVProcFamilyEnum RISCVProcFamily = Others;
   
   bool HasExtxtheadcondmov = false;
-  bool HasExtxtheadmac = false;
+  bool HasExtXTheadMac = false;
 
   bool HasStdExtM = false;
   bool HasStdExtA = false;
@@ -152,7 +152,7 @@ public:
   RISCVProcFamilyEnum getProcFamily() const { return RISCVProcFamily; }
 
   bool hasExtxtheadcondmov() const { return HasExtxtheadcondmov; }
-  bool hasExtxtheadmac() const { return HasExtxtheadmac; }
+  bool hasExtXTheadMac() const { return HasExtXTheadMac; }
 
   bool hasStdExtM() const { return HasStdExtM; }
   bool hasStdExtA() const { return HasStdExtA; }
