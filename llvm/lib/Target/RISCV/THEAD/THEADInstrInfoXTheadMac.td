@@ -3,8 +3,8 @@
 //===----------------------------------------------------------------------===//
 
 class MacNBitPatFrag<SDPatternOperator IRSDOperator, code predicate> 
-      : PatFrag<(ops node:$rd, node:$rs1, node:$rs2),
-                (XLenVT (IRSDOperator node:$rd, (mul node:$rs1, node:$rs2))),
+      : PatFrag<(ops node:$rdcp, node:$rs1, node:$rs2),
+                (XLenVT (IRSDOperator node:$rdcp, (mul node:$rs1, node:$rs2))),
                 predicate> {
   
 	assert !or(!eq(IRSDOperator, add),
@@ -31,7 +31,7 @@ class MacHalfWordPatFrag<SDPatternOperator IRSDOperator> : MacNBitPatFrag<IRSDOp
 //===----------------------------------------------------------------------===//
 
 class PatGprGprWithRd<SDPatternOperator IRSDOperator, RVInst RVInstruction>
-    : Pat<(IRSDOperator GPR:$rd, GPR:$rs1, GPR:$rs2), (RVInstruction GPR:$rd, GPR:$rs1, GPR:$rs2)> {
+    : Pat<(IRSDOperator GPR:$rdcp, GPR:$rs1, GPR:$rs2), (RVInstruction GPR:$rdcp, GPR:$rs1, GPR:$rs2)> {
 	
 	assert !isa<RdRdRs2InstructionFormat>(RVInstruction),
 						 "PatGprGprWithRd accepts only RdRdRs2InstructionFormat RVInst values.";
@@ -66,15 +66,15 @@ def : PatGprGprWithRd<MacHalfWordPatFrag<add>, TH_MULAH>;
 let Predicates = [IsRV64, HasExtXTheadMac] in
 def : PatGprGprWithRd<MacWordPatFrag<add>, TH_MULAW>;
 
-def : Pat<(add GPR:$rd, (mul GPR:$rs1, GPR:$rs2)),
-          (TH_MULA GPR:$rd, GPR:$rs1, GPR:$rs2)>;
+def : Pat<(add GPR:$rdcp, (mul GPR:$rs1, GPR:$rs2)),
+          (TH_MULA GPR:$rdcp, GPR:$rs1, GPR:$rs2)>;
 
 def : PatGprGprWithRd<MacHalfWordPatFrag<sub>, TH_MULSH>;
 
 let Predicates = [IsRV64, HasExtXTheadMac] in
 def : PatGprGprWithRd<MacWordPatFrag<sub>, TH_MULSW>;
 
-def : Pat<(sub GPR:$rd, (mul GPR:$rs1, GPR:$rs2)),
-          (TH_MULS GPR:$rd, GPR:$rs1, GPR:$rs2)>;
+def : Pat<(sub GPR:$rdcp, (mul GPR:$rs1, GPR:$rs2)),
+          (TH_MULS GPR:$rdcp, GPR:$rs1, GPR:$rs2)>;
 
 }
