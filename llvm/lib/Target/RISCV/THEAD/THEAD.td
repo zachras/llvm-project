@@ -2,12 +2,12 @@
 // T-HEAD subtarget features and instruction predicates.
 //===----------------------------------------------------------------------===//
 
-def FeatureExtxtheadcondmov
-    : SubtargetFeature<"xtheadcondmov", "HasExtxtheadcondmov", "true",
-                       "'xtheadcondmov' (T-Head Conditional Move Instructions)">;
-def HasExtxtheadcondmov : Predicate<"Subtarget->hasExtxtheadcondmov()">,
-                           AssemblerPredicate<(all_of FeatureExtxtheadcondmov),
-                           "'xtheadcondmov' (T-Head Conditional Move Instructions)">;
+def FeatureExtXTheadCondMov
+    : SubtargetFeature<"xtheadcondmov", "HasExtXTheadCondMov", "true",
+                       "'XTheadCondMov' (T-Head Conditional Move Instructions)">;
+def HasExtXTheadCondMov : Predicate<"Subtarget->hasExtXTheadCondMov()">,
+                           AssemblerPredicate<(all_of FeatureExtXTheadCondMov),
+                           "'XTheadCondMov' (T-Head Conditional Move Instructions)">;
 
 def FeatureExtXTheadMac
     : SubtargetFeature<"xtheadmac", "HasExtXTheadMac", "true",
