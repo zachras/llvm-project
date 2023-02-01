@@ -25,25 +25,6 @@
 
 using namespace llvm;
 
-namespace {
-	bool isMulOpcode(const SDValue &Ni) {
-		
-		if (!Ni.isMachineOpcode())
-			return false;
-
-		switch (Ni.getMachineOpcode()) {
-		default:
-			return false;
-		case RISCV::MUL:
-		case RISCV::MULH:
-		case RISCV::MULHSU:
-		case RISCV::MULHU:
-		case RISCV::MULW:
-			return true;
-		}
-	}
-}
-
 #define DEBUG_TYPE "riscv-isel"
 
 namespace llvm {
@@ -2365,7 +2346,7 @@ bool RISCVDAGToDAGISel::selectRVVSimm5(SDValue N, unsigned Width,
 }
 
 // Try to remove half-to-XLen sign extension if the input is TH_MULAH or TH_MULSH.
-// or can be made into a TH_MULAH or TH_MULSH instruction cheaply.
+//TODO: Check if input can be made into a TH_MULAH or TH_MULSH instruction cheaply.
 bool RISCVDAGToDAGISel::doPeepholeMACSExtH(SDNode *N) {
 	const auto &ShAmtForSExtH = Subtarget->getXLen() - 16;
 
@@ -2376,72 +2357,25 @@ bool RISCVDAGToDAGISel::doPeepholeMACSExtH(SDNode *N) {
     return false;
 	
   SDValue N0 = N->getOperand(0);
-  SDValue N00 = N0.getOperand(0);
-
   if (!N0.isMachineOpcode() || N0->getMachineOpcode() != RISCV::SLLI
 														|| N0->getConstantOperandVal(1) != ShAmtForSExtH)
     return false;
 
+  SDValue N00 = N0->getOperand(0);
   if (!N00.isMachineOpcode())
     return false;
 	
-	//N is srai
-	//N0 is slli
 	switch (N00.getMachineOpcode()) {
+	//half-to-XLen sign extension is removed when:
+	//N is srai,
+	//N0 is slli,
+	//N00 is TH_MUL{A|S}H
 		default:
 			return false;	
 		case RISCV::TH_MULAH:
 		case RISCV::TH_MULSH:
-	//N00 is TH_MUL{A|S}H
 			ReplaceUses(N, N00.getNode());
 			return true;
-
-    case RISCV::ADD:
-    case RISCV::ADDW:
-    case RISCV::SUB:
-    case RISCV::SUBW: {
-	//N00 is ADD/SUB or ADDW/SUBW
-	//N000 is 1st operand of ADD/SUB or ADDW/SUBW
-	//N001 is 2nd operand of ADD/SUB or ADDW/SUBW
-      
-      unsigned macOpcode;
-
-      switch(N00.getMachineOpcode()) {
-        default:
-          llvm_unreachable("Unexpected opcode!");
-          break;
-        
-        case RISCV::ADD:
-        case RISCV::ADDW:
-          macOpcode = RISCV::TH_MULAH;
-          break;
-        
-        case RISCV::SUB:
-        case RISCV::SUBW:
-          macOpcode = RISCV::TH_MULSH;
-          break;
-      }      
-
-      SDValue N000 = N00.getOperand(0);
-      SDValue N001 = N00.getOperand(1);
-      
-      if (!N000.isMachineOpcode() || !N001.isMachineOpcode())
-        return false;
-
-      else if (isMulOpcode(N001) && N00 == N000) {
-        SDValue mulOperand0 = N001.getOperand(0);
-        SDValue mulOperand1 = N001.getOperand(1);
-
-        //TODO: Must check if the mul operands are machine opcodes?
-
-			  ReplaceUses(N, CurDAG->getMachineNode(macOpcode, SDLoc(N), N->getValueType(0),
-                                              N000, mulOperand0, mulOperand1));
-        return true;
-      }
-
-      else
-        return false;
-    }
 	}
 	
 }
@@ -2458,9 +2392,6 @@ bool RISCVDAGToDAGISel::doPeepholeSExtW(SDNode *N) {
   if (!N0.isMachineOpcode())
     return false;
 
-  SDValue N00 = N0.getOperand(0);
-  SDValue N01 = N0.getOperand(1);
-
   switch (N0.getMachineOpcode()) {
   default:
     break;
@@ -2469,42 +2400,30 @@ bool RISCVDAGToDAGISel::doPeepholeSExtW(SDNode *N) {
   case RISCV::SUB:
   case RISCV::MUL:
   case RISCV::SLLI: {
-    // Convert sext.w+add/sub/mul or sext.w+(add,mul) to their W instructions. This will create
+    // Convert sext.w+add/sub/mul to their W instructions. This will create
     // a new independent instruction. This improves latency.
     unsigned Opc;
     switch (N0.getMachineOpcode()) {
     default:
       llvm_unreachable("Unexpected opcode!");
-    case RISCV::ADD:
-  	  // Look for the TH_MULAW pattern, mul rd, rs1, rs2
-		  //                                add rd2, rd2, rd
-			
-		  Opc = isMulOpcode(N01) && N0 == N00 ? RISCV::TH_MULAW : RISCV::ADDW;
-		  break;
-    
-		case RISCV::ADDI: Opc = RISCV::ADDIW; break;
-    case RISCV::SUB:
-  	  // Look for the TH_MULSW pattern, mul rd, rs1, rs2
-		  //                                sub rd2, rd2, rd
-		  Opc = isMulOpcode(N01) && N0 == N00 ? RISCV::TH_MULSW : RISCV::SUBW;
-		  break;
+    case RISCV::ADD:  Opc = RISCV::ADDW;  break;
+    case RISCV::ADDI: Opc = RISCV::ADDIW; break;
+    case RISCV::SUB:  Opc = RISCV::SUBW;  break;
     case RISCV::MUL:  Opc = RISCV::MULW;  break;
     case RISCV::SLLI: Opc = RISCV::SLLIW; break;
     }
+
+    SDValue N00 = N0.getOperand(0);
+    SDValue N01 = N0.getOperand(1);
 
     // Shift amount needs to be uimm5.
     if (N0.getMachineOpcode() == RISCV::SLLI &&
         !isUInt<5>(cast<ConstantSDNode>(N01)->getSExtValue()))
       break;
 
-    SDNode *Result;
-
-    if (Opc == RISCV::TH_MULAW || Opc == RISCV::TH_MULSW)
-      Result = CurDAG->getMachineNode(Opc, SDLoc(N), N->getValueType(0),
-                                      N00, N01.getOperand(0), N01.getOperand(1));
-    else
-      Result = CurDAG->getMachineNode(Opc, SDLoc(N), N->getValueType(0),
-                                      N00, N01);
+    SDNode *Result =
+        CurDAG->getMachineNode(Opc, SDLoc(N), N->getValueType(0),
+                               N00, N01);
     ReplaceUses(N, Result);
     return true;
   }
@@ -2516,37 +2435,11 @@ bool RISCVDAGToDAGISel::doPeepholeSExtW(SDNode *N) {
   case RISCV::MULW:
   case RISCV::SLLIW:
   case RISCV::GREVIW:
-  case RISCV::GORCIW: {
-    SDNode *replacer = nullptr;
-
-    switch (N0.getMachineOpcode()) {
-      default:
-        replacer = N0.getNode();
-        break;
- 
-      case RISCV::ADDW:
-      case RISCV::SUBW: {
-        const auto &macOpcode = N0.getMachineOpcode() == RISCV::ADDW ? RISCV::TH_MULAW : RISCV::TH_MULSW;
-
-		    if (isMulOpcode(N01) && N0 == N00) {
-          replacer = CurDAG->getMachineNode(macOpcode, SDLoc(N), N->getValueType(0),
-                                            N00, N01.getOperand(0), N01.getOperand(1));
-        }
-      
-        else {
-          replacer = N0.getNode();
-        }
-
-		    break;
-      }
-    }
+  case RISCV::GORCIW:
     // Result is already sign extended just remove the sext.w.
     // NOTE: We only handle the nodes that are selected with hasAllWUsers.
-    assert(replacer != nullptr);
-    ReplaceUses(N, replacer);
+    ReplaceUses(N, N0.getNode());
     return true;
-  }
-
   }
 
   return false;
