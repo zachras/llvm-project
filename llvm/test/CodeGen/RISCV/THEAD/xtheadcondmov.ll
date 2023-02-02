@@ -1,8 +1,6 @@
 ; RUN: llc -march=riscv32 -mattr=+xtheadcondmov < %s | FileCheck %s -check-prefixes=ALL,RV32-TH-MVEQZ,RV32-TH-MVNEZ
 ; RUN: llc -march=riscv64 -mattr=+xtheadcondmov < %s | FileCheck %s -check-prefixes=ALL,RV64-TH-MVEQZ,RV64-TH-MVNEZ
 
-;TODO: Add tests for cases where RV32 uses 64 bit values.
-
 ; ALL-LABEL: mveqz1:
 
 ; ALL: th.mveqz a0, a1, a2
