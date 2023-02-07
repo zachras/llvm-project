@@ -2348,36 +2348,36 @@ bool RISCVDAGToDAGISel::selectRVVSimm5(SDValue N, unsigned Width,
 // Try to remove half-to-XLen sign extension if the input is TH_MULAH or TH_MULSH.
 //TODO: Check if input can be made into a TH_MULAH or TH_MULSH instruction cheaply.
 bool RISCVDAGToDAGISel::doPeepholeMACSExtH(SDNode *N) {
-	const auto &ShAmtForSExtH = Subtarget->getXLen() - 16;
+  const auto &ShAmtForSExtH = Subtarget->getXLen() - 16;
 
   // Look for the half-to-XLen sign extension pattern, slli rs1, rs1, XLen - 16
-	//																									 srai rs1, rs1, XLen - 16
+  //                                                   srai rs1, rs1, XLen - 16
   if (N->getMachineOpcode() != RISCV::SRAI ||
       N->getConstantOperandVal(1) != ShAmtForSExtH)
     return false;
-	
+  
   SDValue N0 = N->getOperand(0);
   if (!N0.isMachineOpcode() || N0->getMachineOpcode() != RISCV::SLLI
-														|| N0->getConstantOperandVal(1) != ShAmtForSExtH)
+                            || N0->getConstantOperandVal(1) != ShAmtForSExtH)
     return false;
 
   SDValue N00 = N0->getOperand(0);
   if (!N00.isMachineOpcode())
     return false;
-	
-	switch (N00.getMachineOpcode()) {
-	//half-to-XLen sign extension is removed when:
-	//N is srai,
-	//N0 is slli,
-	//N00 is TH_MUL{A|S}H
-		default:
-			return false;	
-		case RISCV::TH_MULAH:
-		case RISCV::TH_MULSH:
-			ReplaceUses(N, N00.getNode());
-			return true;
-	}
-	
+  
+  switch (N00.getMachineOpcode()) {
+  //half-to-XLen sign extension is removed when:
+  //N is srai,
+  //N0 is slli,
+  //N00 is TH_MUL{A|S}H
+    default:
+      return false;  
+    case RISCV::TH_MULAH:
+    case RISCV::TH_MULSH:
+      ReplaceUses(N, N00.getNode());
+      return true;
+  }
+  
 }
 
 // Try to remove sext.w if the input is a W instruction or can be made into

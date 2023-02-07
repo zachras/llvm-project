@@ -7,13 +7,13 @@ class MacNBitPatFrag<SDPatternOperator IRSDOperator, code predicate>
                 (XLenVT (IRSDOperator node:$rdcp, (mul node:$rs1, node:$rs2))),
                 predicate> {
   
-	assert !or(!eq(IRSDOperator, add),
-						 !eq(IRSDOperator, sub)),
-						 "MacNBitPatFrag accepts only \"add\" or \"sub\" SDPatternOperator values.";
+  assert !or(!eq(IRSDOperator, add),
+             !eq(IRSDOperator, sub)),
+             "MacNBitPatFrag accepts only \"add\" or \"sub\" SDPatternOperator values.";
 
   assert !or(!eq(predicate, "\n  return hasAllWUsers(Node);\n"),
-						 !eq(predicate, "\n  return hasAllHUsers(Node);\n")),
-						 "MacNBitPatFrag accepts only word or half word operation result usage predicate check.";
+             !eq(predicate, "\n  return hasAllHUsers(Node);\n")),
+             "MacNBitPatFrag accepts only word or half word operation result usage predicate check.";
 
 }
 
