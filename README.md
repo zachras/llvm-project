@@ -115,7 +115,9 @@ This is an example work-flow and configuration to get and build the LLVM source:
 Since this thesis is **focused on the RISC-V LLVM backend**,
 a bash script file that automates the CMake process is provided.
 The steps provided below configure and build LLVM and Clang for
-RISC-V only. Of course, you are free to modify it and tailor it
+RISC-V and X86 only. The latter is also considered only as a 
+temporary solution and it is to be removed (because the host architecture is X86,
+test files for X86 will fail without it). Of course, you are free to modify it and tailor it
 to your needs. If your computer is fast enough, consider increasing
 the value of the paramerter ``DLLVM_PARALLEL_LINK_JOBS``.
       
